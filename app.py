@@ -1,10 +1,28 @@
+import os
+from pathlib import Path
 import joblib
 import pandas as pd
 import streamlit as st
 
-model = joblib.load('models/resume_model.pkl')
-scaler = joblib.load('models/scaler.pkl')
-metadata = joblib.load('models/metadata.pkl')
+# Resolve base directory relative to this script
+BASE_DIR = Path(__file__).resolve().parent
+
+def get_model_path(filename: str) -> Path:
+    # 1. Check in models/ relative to app.py directory
+    if (BASE_DIR / 'models' / filename).exists():
+        return BASE_DIR / 'models' / filename
+    # 2. Check in ai_resume_analyser/models/ relative to app.py directory
+    if (BASE_DIR / 'ai_resume_analyser' / 'models' / filename).exists():
+        return BASE_DIR / 'ai_resume_analyser' / 'models' / filename
+    # 3. Check in parent directory / models
+    if (BASE_DIR.parent / 'models' / filename).exists():
+        return BASE_DIR.parent / 'models' / filename
+    # Fallback default
+    return BASE_DIR / 'models' / filename
+
+model = joblib.load(get_model_path('resume_model.pkl'))
+scaler = joblib.load(get_model_path('scaler.pkl'))
+metadata = joblib.load(get_model_path('metadata.pkl'))
 
 st.title('AI Resume Screening')
 st.caption(f"Model: {metadata['model_name']}")
